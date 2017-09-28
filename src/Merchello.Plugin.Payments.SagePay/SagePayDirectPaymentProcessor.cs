@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using System.Web;
+using Merchello.Core;
 using Merchello.Core.Gateways.Payment;
 using Merchello.Core.Models;
 using Merchello.Plugin.Payments.SagePay.Models;
