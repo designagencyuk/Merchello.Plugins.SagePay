@@ -153,6 +153,9 @@ namespace Merchello.Plugin.Payments.SagePay.Controllers
             // Redirect to ReturnUrl (with token replacement for an alternative means of order retrieval)
             var returnUrl = payment.ExtendedData.GetValue(Constants.ExtendedDataKeys.ReturnUrl);
             var response = Request.CreateResponse(HttpStatusCode.Moved);
+
+            Notification.Trigger("OrderConfirmation", captureResult, new[] { invoice.BillToEmail });
+
             response.Headers.Location = new Uri(returnUrl.Replace("%INVOICE%", invoice.Key.ToString().EncryptWithMachineKey()));
             return response;
         }

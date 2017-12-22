@@ -123,8 +123,7 @@ namespace Merchello.Plugin.Payments.SagePay
             }
 
         }
-
-
+        
         //TODO: refactor away to a Service that wraps the SagePay kit horribleness
         private void SetSagePayApiData(IFormPayment request, IInvoice invoice, IPayment payment)
         {
@@ -144,24 +143,24 @@ namespace Merchello.Plugin.Payments.SagePay
             request.VpsProtocol = Settings.ProtocolVersion;
             request.TransactionType = Settings.TransactionType;
             request.Vendor = Settings.VendorName;
-            request.VendorTxCode = SagePayFormIntegration.GetNewVendorTxCode();
+            request.VendorTxCode = SagePayAPIIntegration.GetNewVendorTxCode();
             request.Amount = payment.Amount;
             request.Currency = invoice.CurrencyCode();
-            request.Description = "Goods from " + Settings.VendorName;
+            request.Description = $"Goods from LD Multi-Parts (Order Number: {invoice.InvoiceNumber})";
             
             // TODO:  Is there a basket summary I can access?  Or convert the Basket to a sagepay format
 
             // Set ReturnUrl and CancelUrl of SagePay request to SagePayApiController.
-            Func<string, string> adjustUrl = (url) =>
+            string AdjustUrl(string url)
             {
                 if (!url.StartsWith("http")) url = GetWebsiteUrl() + (url[0] == '/' ? "" : "/") + url;
                 url = url.Replace("{invoiceKey}", invoice.Key.ToString(), StringComparison.InvariantCultureIgnoreCase);
                 url = url.Replace("{paymentKey}", payment.Key.ToString(), StringComparison.InvariantCultureIgnoreCase);
                 return url;
-            };
+            }
 
-            request.SuccessUrl = adjustUrl("/umbraco/MerchelloSagePay/SagePayApi/SuccessPayment?InvoiceKey={invoiceKey}&PaymentKey={paymentKey}");
-            request.FailureUrl = adjustUrl("/umbraco/MerchelloSagePay/SagePayApi/AbortPayment?InvoiceKey={invoiceKey}&PaymentKey={paymentKey}");
+            request.SuccessUrl = AdjustUrl("/umbraco/MerchelloSagePay/SagePayApi/SuccessPayment?InvoiceKey={invoiceKey}&PaymentKey={paymentKey}");
+            request.FailureUrl = AdjustUrl("/umbraco/MerchelloSagePay/SagePayApi/AbortPayment?InvoiceKey={invoiceKey}&PaymentKey={paymentKey}");
 
             // Billing details
             request.BillingSurname = billingAddress.TrySplitLastName();
@@ -170,7 +169,8 @@ namespace Merchello.Plugin.Payments.SagePay
             request.BillingAddress2 = billingAddress.Address2;
             request.BillingPostCode = billingAddress.PostalCode;
             request.BillingCity = billingAddress.Locality;
-            request.BillingCountry = invoice.BillToCountryCode;
+            request.BillingCountry = billingAddress.CountryCode;
+            request.BillingPhone = billingAddress.Phone;
             request.CustomerEmail = billingAddress.Email;
 
             // Shipping details
@@ -180,10 +180,11 @@ namespace Merchello.Plugin.Payments.SagePay
             request.DeliveryCity = shippingAddress.Locality;
             request.DeliveryCountry = shippingAddress.CountryCode;
             request.DeliveryPostCode = shippingAddress.PostalCode;
+            request.DeliveryPhone = shippingAddress.Phone;
 
             //Optional
             //request.CustomerName = cart.Billing.FirstNames + " " + cart.Billing.Surname;
-            
+
             //request.VendorEmail = Settings.VendorEmail;
             //request.SendEmail = Settings.SendEmail;
 
@@ -196,8 +197,6 @@ namespace Merchello.Plugin.Payments.SagePay
             //request.DeliveryPostCode = shippingAddress.PostalCode;
             //request.DeliveryState = shippingAddress.Region;
             //request.DeliveryPhone = shippingAddress.Phone;
-
         }
-
     }
 }

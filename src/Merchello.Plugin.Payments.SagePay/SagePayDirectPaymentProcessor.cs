@@ -212,7 +212,8 @@ namespace Merchello.Plugin.Payments.SagePay
             request.BillingAddress2 = billingAddress.Address2;
             request.BillingPostCode = billingAddress.PostalCode;
             request.BillingCity = billingAddress.Locality;
-            request.BillingCountry = invoice.BillToCountryCode;
+            request.BillingCountry = billingAddress.CountryCode;
+            request.BillingPhone = billingAddress.Phone;
 
             // Shipping details
             request.DeliverySurname = shippingAddress.TrySplitLastName();
@@ -221,6 +222,7 @@ namespace Merchello.Plugin.Payments.SagePay
             request.DeliveryCity = shippingAddress.Locality;
             request.DeliveryCountry = shippingAddress.CountryCode;
             request.DeliveryPostCode = shippingAddress.PostalCode;
+            request.DeliveryPhone = shippingAddress.Phone;
 
             request.CardType = (CardType)Enum.Parse(typeof(CardType), creditCard.CreditCardType);
             request.CardHolder = creditCard.CardholderName;
