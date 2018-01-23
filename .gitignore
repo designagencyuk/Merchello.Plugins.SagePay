@@ -207,3 +207,4 @@ App_Data/courier/
 App_Data/umbraco.config
 App_Data/umbraco.licensing.log.txt
 imagecache/
+src/.vs/

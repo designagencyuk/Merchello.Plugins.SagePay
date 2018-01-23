@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
-using System.Web;
 using Merchello.Core;
 using Merchello.Core.Gateways.Payment;
 using Merchello.Core.Models;
@@ -52,7 +51,7 @@ namespace Merchello.Plugin.Payments.SagePay
         public IPaymentResult InitializePayment(IInvoice invoice, IPayment payment, ProcessorArgumentCollection args)
         {
             try
-            {            
+            {         
                 // Gather SagePay settings info and formulate it into a Dictionary for posting to the gateway
                 var sagePayFormIntegration = new SagePayFormIntegration(Settings);
                 var request = sagePayFormIntegration.FormPaymentRequest();
@@ -67,7 +66,7 @@ namespace Merchello.Plugin.Payments.SagePay
 
                 // Use the SagePay methods to encrypt the form so it can be posted
                 sagePayFormIntegration.ProcessRequest(request);
-
+                
                 
                 // Prepare a HTTP post
                 var content =
@@ -85,7 +84,11 @@ namespace Merchello.Plugin.Payments.SagePay
                     // Post the form to SagePay VSP
                     var formPaymentUrl = string.Format("https://{0}.sagepay.com/gateway/service/vspform-register.vsp", Settings.Environment);
                     // TEST form post
-                    //var formPaymentUrl = string.Format("https://{0}.sagepay.com/showpost/showpost.asp", GetModeString(Settings.LiveMode));
+                    // var formPaymentUrl = string.Format("https://{0}.sagepay.com/showpost/showpost.asp", GetModeString(Settings.LiveMode));
+
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls |
+                                                           SecurityProtocolType.Tls11 |
+                                                           SecurityProtocolType.Tls12;
 
                     var result = new HttpClient().PostAsync(formPaymentUrl, content).Result;
 
@@ -177,6 +180,7 @@ namespace Merchello.Plugin.Payments.SagePay
             request.DeliverySurname = shippingAddress.TrySplitLastName();
             request.DeliveryFirstnames = shippingAddress.TrySplitFirstName();
             request.DeliveryAddress1 = shippingAddress.Address1;
+            request.DeliveryAddress2 = shippingAddress.Address2;
             request.DeliveryCity = shippingAddress.Locality;
             request.DeliveryCountry = shippingAddress.CountryCode;
             request.DeliveryPostCode = shippingAddress.PostalCode;
